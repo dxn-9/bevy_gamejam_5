@@ -16,4 +16,6 @@ opt-level = 1
 opt-level = 3
 
 [dependencies]
-bevy = "0.14"
+bevy = { version = "0.14" }
+bevy-inspector-egui = "0.25.1"
+bevy_rapier3d = { version = "*", features = ["debug-render-3d"] }
