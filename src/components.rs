@@ -22,6 +22,8 @@ pub enum Seasons {
     Autumn,
     Winter,
 }
+#[derive(Default, Component, Clone, Copy, Debug, PartialEq)]
+pub struct Earth;
 
 #[derive(Default, Component, Clone, Copy, Debug, PartialEq)]
 pub struct Velocity(Vec3);

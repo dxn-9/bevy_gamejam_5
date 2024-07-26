@@ -2,13 +2,13 @@ use std::f32::consts::PI;
 
 use bevy::{
     color::palettes::css::{BLACK, BROWN, GRAY, RED, WHITE, YELLOW},
-    math::vec3,
+    math::{vec2, vec3},
     prelude::*,
 };
 use bevy_rapier3d::prelude::*;
 
 use crate::{
-    components::{Ground, Player, PlayerCamera, PlayerMesh, Seasons},
+    components::{Earth, Ground, Player, PlayerCamera, PlayerMesh, Seasons},
     constants::{CAMERA_DISTANCE_Y, CAMERA_DISTANCE_Z},
 };
 
@@ -52,7 +52,6 @@ pub fn setup_world(
 
     // Earth
     {
-        // Planet
         let earth_radius = 1.4;
         let earth_position = vec3(0.0, earth_radius, -24.0);
         commands
@@ -69,6 +68,7 @@ pub fn setup_world(
                         }),
                         ..Default::default()
                     },
+                    Earth,
                     RigidBody::Dynamic,
                     Collider::ball(earth_radius),
                     CollisionGroups::new(Group::GROUP_2, Group::ALL),
@@ -106,16 +106,21 @@ pub fn setup_world(
                         ),
                     ));
                 }
-                for (i, season) in SEASONS.iter().enumerate() {
-                    let angle = (2. * PI / SEASONS.len() as f32) * i as f32;
+                let season_position = [
+                    vec2(0.5, 0.5),
+                    vec2(0.5, -0.5),
+                    vec2(-0.5, 0.5),
+                    vec2(-0.5, -0.5),
+                ];
+                for (season, pos) in SEASONS.iter().zip(season_position.iter()) {
                     c.spawn((
                         Collider::cuboid(cage_radius / 2., 1., cage_radius / 2.),
                         season.clone(),
                         Sensor,
                         TransformBundle::from_transform(Transform::from_xyz(
-                            cage_radius / 2.,
+                            cage_radius * pos.x,
                             0.,
-                            cage_radius / 2.,
+                            cage_radius * pos.y,
                         )),
                     ));
                 }
@@ -201,4 +206,17 @@ pub fn setup_world(
                 PlayerCamera,
             ));
         });
+}
+
+pub fn check_seasons_for_world(
+    rapier_context: Res<RapierContext>,
+    q_planet: Query<Entity, With<Earth>>,
+    q_seasons: Query<(Entity, &Seasons)>,
+) {
+    let planet = q_planet.single();
+    for (entity, season) in q_seasons.iter() {
+        if rapier_context.intersection_pair(entity, planet) == Some(true) {
+            println!("The planet is in the {:?} season!", season);
+        }
+    }
 }

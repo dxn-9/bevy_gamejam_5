@@ -9,6 +9,18 @@ pub fn setup_ui(mut commands: Commands) {
     commands
         .spawn(NodeBundle {
             style: Style {
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::FlexEnd,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .with_children(|commands| {
+            commands.spawn(TextBundle::from_section("ASD!", TextStyle::default()));
+        });
+    commands
+        .spawn(NodeBundle {
+            style: Style {
                 margin: UiRect {
                     top: Val::Px(10.0),
                     ..Default::default()

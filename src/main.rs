@@ -14,6 +14,7 @@ use bevy::input::InputSystem;
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_rapier3d::prelude::*;
+use calendar::update_calendar;
 use components::{FreeCamera, Player, PlayerCamera};
 use constants::{
     CAMERA_DISTANCE_X, CAMERA_DISTANCE_Y, CAMERA_DISTANCE_Z, CAMERA_PAN_VELOCITY,
@@ -21,10 +22,11 @@ use constants::{
 };
 use pan_camera::{pan_orbit_camera, PanOrbitCameraBundle, PanOrbitSettings, PanOrbitState};
 use player::player_movement;
-use resources::{MovementInput, ResourcesPlugin};
+use resources::{Calendar, MovementInput, ResourcesPlugin};
 use ui::{setup_ui, update_ui};
-use world::setup_world;
+use world::{check_seasons_for_world, setup_world};
 
+mod calendar;
 mod components;
 mod constants;
 mod pan_camera;
@@ -48,6 +50,7 @@ fn main() {
             RapierDebugRenderPlugin::default(),
             WorldInspectorPlugin::new(),
         ))
+        .init_resource::<Calendar>()
         .init_resource::<AmbientLight>()
         .init_resource::<MovementInput>()
         .add_systems(Startup, (setup, setup_ui, setup_world))
@@ -59,14 +62,15 @@ fn main() {
             })
             .run_if(input_just_pressed(bevy::input::keyboard::KeyCode::Escape)),
         )
+        .add_systems(Update, (update_ui, update_calendar))
         .add_systems(
-            Update,
+            FixedUpdate,
             (
+                player_movement,
                 pan_orbit_camera.run_if(any_with_component::<PanOrbitState>),
-                update_ui,
+                check_seasons_for_world,
             ),
         )
-        .add_systems(FixedUpdate, player_movement)
         .run();
 }
 
